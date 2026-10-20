@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: softprops/action-gh-release@v2
         with:
-          name: MyApp ${{ github.ref_name }}
+          name: guessinggame ${{ github.ref_name }}
           generate_release_notes: true
 
   build_release:
@@ -26,21 +26,22 @@ jobs:
         include:
           - os: ubuntu-latest
             asset: guessinggame-linux-x86_64
+            binary: target/release/guessinggame
           - os: macos-latest
             asset: guessinggame-macos-arm64
+            binary: target/release/guessinggame
           - os: windows-latest
             asset: guessinggame-windows-x86_64.exe
+            binary: target/release/gussinggame
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: Build
-        shell: bash
-        run: |
-          echo "cargo build --release"
+        run: cargo build --release
 
       - name: Rename output
         shell: bash
-        run: cp path/to/your/binary ${{ matrix.asset }}
+        run: cp ${{ matrix.binary }} ${{ matrix.asset }}
 
       - uses: softprops/action-gh-release@v2
         with:
