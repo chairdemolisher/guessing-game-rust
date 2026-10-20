@@ -3,11 +3,6 @@ name = "guessing_game"
 version = "0.1.0"
 edition = "2024"
 
-[rust-build.action]
-identifier = "io.github.chairdemolisher.guessing-game"
-category = "public.app-category.games"
-displayName = "Guessing game"
-
 [dependencies]
 color-print = "0.3.7"
 crossterm = "0.29.0"

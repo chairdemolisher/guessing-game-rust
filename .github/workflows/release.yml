@@ -1,0 +1,37 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            asset: GuessingGame-macos-arm64
+            binary: target/release/guessing-game-rust
+          - os: ubuntu-latest
+            asset: GuessingGame-linux-x86_64
+            binary: target/release/guessing-game-rust
+          - os: windows-latest
+            asset: GuessingGame-windows-x86_64.exe
+            binary: target/release/guessing-game-rust.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - name: Rename output
+        shell: bash
+        run: cp ${{ matrix.binary }} ${{ matrix.asset }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Guessing Game ${{ github.ref_name }}
+          generate_release_notes: true
+          files: ${{ matrix.asset }}
