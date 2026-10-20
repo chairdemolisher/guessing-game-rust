@@ -2,12 +2,32 @@ use color_print::cprintln;
 use dialoguer::{BasicHistory, Input};
 use std::cmp::Ordering;
 use std::process;
+use std::{io, str};
+
+fn read_number(prompt: &str) -> f64 {
+    loop {
+        println!("{prompt}");
+
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("could not read input");
+
+        match input.trim().parse::<f64>() {
+            Ok(n) => return n,
+            Err(_) => println!("not a valid number! please input a real number."),
+        }
+    }
+}
 
 fn main() {
-    println!("Guess the number!");
+    let first_number = read_number("type in your first number:");
+    let second_number = read_number("type in your second number:");
+
+    println!("Guess the number! the number is between {first_number} and {second_number}");
     println!();
 
-    let secret_number: f64 = rand::random_range(1.0..=2.0);
+    let secret_number: f64 = rand::random_range(first_number..=second_number);
 
     //println!("the secret number is: {secret_number}");
 
@@ -40,7 +60,7 @@ fn main() {
                     num
                 }
                 Err(_) => {
-                    cprintln!("<green>Thats not a number! type in a number.</>");
+                    cprintln!("<green>Thats not a valid number! type in a number.</>");
                     println!("-----------------");
                     continue;
                 }
