@@ -1,8 +1,12 @@
 use color_print::cprintln;
+use crossterm::cursor;
+use crossterm::{execute, style::Print, terminal};
 use dialoguer::{BasicHistory, Input};
+use indicatif::HumanDuration;
 use std::cmp::Ordering;
-use std::process;
+use std::time::{Duration, Instant};
 use std::{io, str};
+use std::{process, thread};
 
 fn read_number(prompt: &str) -> f64 {
     loop {
@@ -20,24 +24,44 @@ fn read_number(prompt: &str) -> f64 {
     }
 }
 
+fn draw_timer(sw: Instant) {
+    let (width, height) = terminal::size().unwrap();
+    let text = format!("timer: {}", HumanDuration(sw.elapsed()));
+    let text = format!("{:>25}", text);
+    execute!(
+        io::stdout(),
+        cursor::SavePosition,
+        cursor::MoveTo(width - 25, height - 1),
+        Print(text),
+        cursor::RestorePosition
+    )
+    .unwrap();
+}
+
 fn main() {
     let first_number = read_number("type in your first number:");
     let second_number = read_number("type in your second number:");
+    let secret_number: f64 = rand::random_range(first_number..=second_number);
+    let mut history = BasicHistory::new().max_entries(8).no_duplicates(true);
+    let mut attempts = 1;
+    let sw = Instant::now();
 
     println!("Guess the number! the number is between {first_number} and {second_number}");
     println!();
 
-    let secret_number: f64 = rand::random_range(first_number..=second_number);
+    // println!("the secret number is: {secret_number}"); // used for testing
 
-    //println!("the secret number is: {secret_number}");
-
-    let mut history = BasicHistory::new().max_entries(8).no_duplicates(true);
-
-    let mut attempts = 0;
+    thread::spawn(move || {
+        loop {
+            draw_timer(sw);
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
 
     loop {
         println!("attempt: #{attempts}");
         println!("Please input your guess");
+        draw_timer(sw);
 
         if let Ok(guess) = Input::<String>::new()
             .history_with(&mut history)
@@ -48,11 +72,6 @@ fn main() {
             }
             println!();
             println!("-----------------");
-
-            //let mut guess = String::new();
-            //io::stdin()
-            //    .read_line(&mut guess)
-            //    .expect("Failed to read line");
 
             let guess: f64 = match guess.trim().parse() {
                 Ok(num) => {
@@ -73,11 +92,13 @@ fn main() {
                 }
                 Ordering::Greater => {
                     cprintln!("<red>Too big!</>");
+
                     println!("-----------------")
                 }
                 Ordering::Equal => {
                     println!("You guessed correctly!");
                     println!("number of attempts: {attempts} guesses");
+                    cprintln!("<green>final time: {}</>", HumanDuration(sw.elapsed()));
                     break;
                 }
             }

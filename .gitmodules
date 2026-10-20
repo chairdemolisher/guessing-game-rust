@@ -1,0 +1,3 @@
+[submodule "devshell"]
+	path = devshell
+	url = https://github.com/99linesofcode/devshell-rust
