@@ -211,6 +211,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "guessing_game"
+version = "0.1.0"
+dependencies = [
+ "color-print",
+ "crossterm",
+ "dialoguer",
+ "indicatif",
+ "rand",
+]
+
+[[package]]
 name = "indicatif"
 version = "0.18.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -514,17 +525,6 @@ dependencies = [
  "once_cell",
  "rustix",
  "windows-sys",
-]
-
-[[package]]
-name = "testing_rust"
-version = "0.1.0"
-dependencies = [
- "color-print",
- "crossterm",
- "dialoguer",
- "indicatif",
- "rand",
 ]
 
 [[package]]
