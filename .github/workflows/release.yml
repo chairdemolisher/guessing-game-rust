@@ -15,13 +15,13 @@ jobs:
         include:
           - os: macos-latest
             asset: GuessingGame-macos-arm64
-            binary: target/release/guessing-game-rust
+            binary: target/release/guessing_game
           - os: ubuntu-latest
             asset: GuessingGame-linux-x86_64
-            binary: target/release/guessing-game-rust
+            binary: target/release/guessing_game
           - os: windows-latest
             asset: GuessingGame-windows-x86_64.exe
-            binary: target/release/guessing-game-rust.exe
+            binary: target/release/guessing_game.exe
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
