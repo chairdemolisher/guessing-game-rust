@@ -1,0 +1,47 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: MyApp ${{ github.ref_name }}
+          generate_release_notes: true
+
+  build_release:
+    name: Build ${{ matrix.asset }}
+    needs: create_release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: guessinggame-linux-x86_64
+          - os: macos-latest
+            asset: guessinggame-macos-arm64
+          - os: windows-latest
+            asset: guessinggame-windows-x86_64.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        shell: bash
+        run: |
+          echo "cargo build --release"
+
+      - name: Rename output
+        shell: bash
+        run: cp path/to/your/binary ${{ matrix.asset }}
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset }}
