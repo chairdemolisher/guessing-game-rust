@@ -1,12 +1,9 @@
 use color_print::cprintln;
-use crossterm::cursor;
-use crossterm::{execute, style::Print, terminal};
+use crossterm::{cursor, execute, style::Print, terminal};
 use dialoguer::{BasicHistory, Input};
 use indicatif::HumanDuration;
-use std::cmp::Ordering;
 use std::time::{Duration, Instant};
-use std::{io, str};
-use std::{process, thread};
+use std::{cmp::Ordering, io, process, str, thread};
 
 fn read_number(prompt: &str) -> f64 {
     loop {
@@ -17,7 +14,7 @@ fn read_number(prompt: &str) -> f64 {
             .read_line(&mut input)
             .expect("could not read input");
 
-        match input.trim().parse::<f64>() {
+        match input.trim().replace(',', ".").parse::<f64>() {
             Ok(n) => return n,
             Err(_) => println!("not a valid number! please input a real number."),
         }
@@ -73,7 +70,7 @@ fn main() {
             println!();
             println!("-----------------");
 
-            let guess: f64 = match guess.trim().parse() {
+            let guess: f64 = match guess.trim().replace(',', ".").parse() {
                 Ok(num) => {
                     attempts += 1;
                     num
