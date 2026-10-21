@@ -2,6 +2,7 @@ use color_print::cprintln;
 use crossterm::{cursor, execute, style::Print, terminal};
 use dialoguer::{BasicHistory, Input};
 use indicatif::HumanDuration;
+use rust_decimal::prelude::*;
 use std::time::{Duration, Instant};
 use std::{cmp::Ordering, io, process, str, thread};
 
@@ -38,15 +39,22 @@ fn draw_timer(sw: Instant) {
 fn main() {
     let first_number = read_number("type in your first number:");
     let second_number = read_number("type in your second number:");
+    let decimal_places = read_number("type in the amount of decimal places you want to guess:");
     let secret_number: f64 = rand::random_range(first_number..=second_number);
     let mut history = BasicHistory::new().max_entries(8).no_duplicates(true);
     let mut attempts = 0;
     let sw = Instant::now();
 
+    let secret_number = Decimal::from_f64_retain(secret_number)
+        .unwrap()
+        .round_dp(decimal_places as u32)
+        .to_f64()
+        .unwrap();
+
     println!("Guess the number! the number is between {first_number} and {second_number}");
     println!();
 
-    // println!("the secret number is: {secret_number}"); // used for testing
+    //println!("the secret number is: {secret_number}"); // used for testing
 
     thread::spawn(move || {
         loop {
