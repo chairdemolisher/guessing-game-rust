@@ -43,7 +43,7 @@ fn main() {
     let second_number = read_number("type in your second number:");
     let secret_number: f64 = rand::random_range(first_number..=second_number);
     let mut history = BasicHistory::new().max_entries(8).no_duplicates(true);
-    let mut attempts = 1;
+    let mut attempts = 0;
     let sw = Instant::now();
 
     println!("Guess the number! the number is between {first_number} and {second_number}");
@@ -59,7 +59,7 @@ fn main() {
     });
 
     loop {
-        println!("attempt: #{attempts}");
+        println!("attempt: #{}", attempts + 1);
         println!("Please input your guess");
         draw_timer(sw);
 
@@ -97,7 +97,7 @@ fn main() {
                 }
                 Ordering::Equal => {
                     println!("You guessed correctly!");
-                    println!("number of attempts: {attempts} guesses");
+                    println!("number of attempts: {} guesses", attempts);
                     cprintln!("<green>final time: {}</>", HumanDuration(sw.elapsed()));
                     break;
                 }
