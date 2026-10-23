@@ -13,22 +13,6 @@ use std::time::{Duration, Instant};
 use std::{cmp::Ordering, io, process, thread};
 use terminal_menu::{button, label, menu, mut_menu, numeric, run};
 
-//fn read_number(prompt: &str) -> f64 {
-//    loop {
-//        println!("{prompt}");
-//
-//        let mut input = String::new();
-//        io::stdin()
-//            .read_line(&mut input)
-//            .expect("could not read input");
-//
-//        match input.trim().replace(',', ".").parse::<f64>() {
-//            Ok(n) => return n,
-//            Err(_) => println!("not a valid number! please input a real number."),
-//        }
-//    }
-//}
-
 fn draw_timer(sw: Instant) {
     let text = format!("timer: {}", HumanDuration(sw.elapsed()));
     let (width, _height) = terminal::size().expect("failed to get terminal size");
