@@ -1,35 +1,39 @@
 use color_print::cprintln;
-use crossterm::{cursor, execute, style::Print, terminal};
+use crossterm::cursor::DisableBlinking;
+use crossterm::style::Color;
+use crossterm::terminal::ClearType::All;
+use crossterm::terminal::{Clear, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::{cursor, execute, style::Print};
 use dialoguer::{BasicHistory, Input};
 use indicatif::HumanDuration;
 use rust_decimal::prelude::*;
 use std::time::{Duration, Instant};
-use std::{cmp::Ordering, io, process, str, thread};
+use std::{cmp::Ordering, io, process, thread};
+use terminal_menu::{button, label, menu, mut_menu, numeric, run};
 
-fn read_number(prompt: &str) -> f64 {
-    loop {
-        println!("{prompt}");
-
-        let mut input = String::new();
-        io::stdin()
-            .read_line(&mut input)
-            .expect("could not read input");
-
-        match input.trim().replace(',', ".").parse::<f64>() {
-            Ok(n) => return n,
-            Err(_) => println!("not a valid number! please input a real number."),
-        }
-    }
-}
+//fn read_number(prompt: &str) -> f64 {
+//    loop {
+//        println!("{prompt}");
+//
+//        let mut input = String::new();
+//        io::stdin()
+//            .read_line(&mut input)
+//            .expect("could not read input");
+//
+//        match input.trim().replace(',', ".").parse::<f64>() {
+//            Ok(n) => return n,
+//            Err(_) => println!("not a valid number! please input a real number."),
+//        }
+//    }
+//}
 
 fn draw_timer(sw: Instant) {
-    let (width, height) = terminal::size().unwrap();
     let text = format!("timer: {}", HumanDuration(sw.elapsed()));
-    let text = format!("{:>25}", text);
+    // let text = format!("{:>25}", text);
     execute!(
         io::stdout(),
         cursor::SavePosition,
-        cursor::MoveTo(width - 25, height - 1),
+        cursor::MoveTo(0, 7),
         Print(text),
         cursor::RestorePosition
     )
@@ -37,9 +41,36 @@ fn draw_timer(sw: Instant) {
 }
 
 fn main() {
-    let first_number = read_number("type in your first number:");
-    let second_number = read_number("type in your second number:");
-    let decimal_places = read_number("type in the amount of decimal places you want to guess:");
+    let menu = menu(vec![
+        label("-- velkomen til gætte spillet! --").colorize(Color::Red),
+        label("-- vælg indstillinger --").colorize(Color::Magenta),
+        numeric("minimum nummer", 1.0, Some(0.5), Some(0.0), Some(1000000.0)),
+        numeric(
+            "maximum nummer",
+            100.0,
+            Some(0.5),
+            Some(0.0),
+            Some(1000000.0),
+        ),
+        numeric("max decimal places", 10.0, Some(1.0), Some(0.0), Some(15.0)),
+        button("start nyt spil"),
+        button("quit"),
+    ]);
+
+    run(&menu);
+    let mm = mut_menu(&menu);
+
+    match mm.selected_item_name() {
+        "quit" => return,
+        _ => {}
+    }
+    if mm.canceled() {
+        println!("canceled!");
+        return;
+    }
+    let first_number = mm.numeric_value("minimum nummer");
+    let second_number = mm.numeric_value("maximum nummer");
+    let decimal_places = mm.numeric_value("max decimal places");
     let secret_number: f64 = rand::random_range(first_number..=second_number);
     let mut history = BasicHistory::new().max_entries(8).no_duplicates(true);
     let mut attempts = 0;
@@ -51,8 +82,11 @@ fn main() {
         .to_f64()
         .unwrap();
 
+    execute!(io::stdout(), EnterAlternateScreen).expect("couldnt enter alternate screen");
+    execute!(io::stdout(), cursor::MoveTo(0, 0), DisableBlinking).expect("failed to move cursor");
+
     println!("Guess the number! the number is between {first_number} and {second_number}");
-    println!();
+    println!("-----------------");
 
     //println!("the secret number is: {secret_number}"); // used for testing
 
@@ -92,18 +126,29 @@ fn main() {
 
             match guess.total_cmp(&secret_number) {
                 Ordering::Less => {
+                    execute!(io::stdout(), Clear(All)).expect("failed to clear lines");
+                    execute!(io::stdout(), cursor::MoveTo(0, 0), DisableBlinking)
+                        .expect("failed to move cursor");
+                    cprintln!("<green>your guess was: {guess}</>");
+                    println!("-----------------");
                     cprintln!("<red>Too small!</>");
-                    println!("-----------------")
+                    println!("-----------------");
                 }
                 Ordering::Greater => {
+                    execute!(io::stdout(), Clear(All)).expect("failed to clear lines");
+                    execute!(io::stdout(), cursor::MoveTo(0, 0), DisableBlinking)
+                        .expect("failed to move cursor");
+                    cprintln!("<green>your guess was: {guess}</>");
+                    println!("-----------------");
                     cprintln!("<red>Too big!</>");
-
-                    println!("-----------------")
+                    println!("-----------------");
                 }
                 Ordering::Equal => {
                     println!("You guessed correctly!");
                     println!("number of attempts: {} guesses", attempts);
                     cprintln!("<green>final time: {}</>", HumanDuration(sw.elapsed()));
+                    execute!(io::stdout(), LeaveAlternateScreen)
+                        .expect("failed to leave alternate screen");
                     break;
                 }
             }
