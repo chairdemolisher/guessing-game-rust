@@ -131,30 +131,28 @@ fn main() {
                         continue;
                     }
                 };
+                execute!(
+                    io::stdout(),
+                    Clear(All),
+                    cursor::MoveTo(0, 0),
+                    DisableBlinking
+                )
+                .expect("failed to clear lines");
 
                 match guess.total_cmp(&secret_number) {
                     Ordering::Less => {
-                        execute!(io::stdout(), Clear(All)).expect("failed to clear lines");
-                        execute!(io::stdout(), cursor::MoveTo(0, 0), DisableBlinking)
-                            .expect("failed to move cursor");
                         cprintln!("<green>your guess was: {guess}</>");
                         println!("-----------------");
                         cprintln!("<red>Too small!</>");
                         println!("-----------------");
                     }
                     Ordering::Greater => {
-                        execute!(io::stdout(), Clear(All)).expect("failed to clear lines");
-                        execute!(io::stdout(), cursor::MoveTo(0, 0), DisableBlinking)
-                            .expect("failed to move cursor");
                         cprintln!("<green>your guess was: {guess}</>");
                         println!("-----------------");
                         cprintln!("<red>Too big!</>");
                         println!("-----------------");
                     }
                     Ordering::Equal => {
-                        execute!(io::stdout(), Clear(All)).expect("failed to clear lines");
-                        execute!(io::stdout(), cursor::MoveTo(0, 0), DisableBlinking)
-                            .expect("failed to move cursor");
                         println!("You guessed correctly!");
                         println!("number of attempts: {} guesses", attempts);
                         cprintln!("<green>final time: {}</>", HumanDuration(sw.elapsed()));
