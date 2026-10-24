@@ -28,19 +28,17 @@ fn draw_timer(sw: Instant) {
 }
 
 fn main() {
+    let mut first_number = 1.0;
+    let mut second_number = 100.0;
+    let mut decimal_places = 10.0;
+
     loop {
         let menu = menu(vec![
             label("-- velkomen til gætte spillet! --").colorize(Color::Red),
             label("-- vælg indstillinger --").colorize(Color::Magenta),
-            numeric("minimum nummer", 1.0, Some(0.5), Some(0.0), Some(1000000.0)),
-            numeric(
-                "maximum nummer",
-                100.0,
-                Some(0.5),
-                Some(0.0),
-                Some(1000000.0),
-            ),
-            numeric("max decimal places", 10.0, Some(1.0), Some(0.0), Some(15.0)),
+            numeric("minimum nummer", first_number, Some(0.5), Some(0.0), Some(1000000.0)),
+            numeric("maximum nummer", second_number, Some(0.5), Some(0.0), Some(1000000.0)),
+            numeric("max decimal places", decimal_places, Some(1.0), Some(0.0), Some(15.0)),
             button("start nyt spil"),
             button("quit"),
         ]);
@@ -56,9 +54,10 @@ fn main() {
             println!("canceled!");
             return;
         }
-        let first_number = mm.numeric_value("minimum nummer");
-        let second_number = mm.numeric_value("maximum nummer");
-        let decimal_places = mm.numeric_value("max decimal places");
+
+        first_number = mm.numeric_value("minimum nummer");
+        second_number = mm.numeric_value("maximum nummer");
+        decimal_places = mm.numeric_value("max decimal places");     
         let secret_number: f64 = rand::random_range(first_number..=second_number);
         let mut history = BasicHistory::new().max_entries(8).no_duplicates(true);
         let mut attempts = 0;
@@ -76,8 +75,6 @@ fn main() {
 
         println!("Guess the number! the number is between {first_number} and {second_number}");
         println!("-----------------");
-
-        //println!("the secret number is: {secret_number}"); // used for testing
 
         let running = Arc::new(AtomicBool::new(true));
         let running_for_thread = Arc::clone(&running);
@@ -110,7 +107,7 @@ fn main() {
                         num
                     }
                     Err(_) => {
-                        cprintln!("<green>Thats not a valid number! type in a number.</>");
+                        cprintln!("<red>Thats not a valid number! type in a number.</>");
                         println!("-----------------");
                         continue;
                     }
@@ -137,6 +134,7 @@ fn main() {
                         println!("-----------------");
                     }
                     Ordering::Equal => {
+                        cprintln!("<blue>the answer was: {secret_number}</>");
                         println!("You guessed correctly!");
                         println!("number of attempts: {} guesses", attempts);
                         cprintln!("<green>final time: {}</>", HumanDuration(sw.elapsed()));
@@ -149,7 +147,7 @@ fn main() {
         timer.join().unwrap();
 
         let confirmation = Confirm::new()
-            .with_prompt("Do you want to continue?")
+            .with_prompt("Do you want keep playing?")
             .interact()
             .unwrap();
 
